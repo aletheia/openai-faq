@@ -9,8 +9,8 @@ requests = "*"
 modernmt = "*"
 openai = "*"
 jsonlines = "*"
-click = "*"
 python-dotenv = "*"
+pyinquirer = "*"
 
 [dev-packages]
 autopep8 = "*"

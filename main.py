@@ -1,39 +1,59 @@
 import os
-import json
-import openai
+from PyInquirer import prompt
+from dotenv import load_dotenv
+import logging as log
+import kb_creator as kb
+from faq_ai import FaqAI
 
-import jsonlines
-
-import click
-
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-
-
-# # "Devo pagare per una tecnologia migliore?"
-# prompt = 'Chi sei tu?'
-
-# print('Buongiorno, sono il tuo assistente Fastweb.\nCome posso aiutarti?\n')
-# print(f'Domanda:\n{prompt}')
-# p_en = mmt.translate('it', 'en', prompt).translation
-# #print(f'Translated to {p_en}')
-
-# response = openai.Answer.create(
-#     search_model="ada",
-#     model="curie",
-#     question=p_en,
-#     documents=openai_faq_documents,
-#     examples_context="In 2017, U.S. life expectancy was 78.6 years.",
-#     examples=[["What is human life expectancy in the United States?", "78 years."]],
-#     max_tokens=50,
-#     stop=["\n", "<|endoftext|>"],
-# )
-
-# print('\nRisposta:\n')
-# for answer in response.answers:
-#     print(mmt.translate('en', 'it', answer).translation)
+load_dotenv()
+log.basicConfig(level=log.INFO, filename='debug.log')
 
 
-# # @click.command()
-# # @click.argument('question')
-# # def main(question):
-# #     click.echo('Benvenuto, sono il tuo assistente Fastweb. Come posso aiutarti?')
+def setup(force=False):
+    log.info('Buongiorno, sto configurando l\'ambiente...')
+    faqAI = FaqAI(log)
+    if force:
+        log.info('building dataset')
+
+        dataset_en, dataset_it, data_json_en, data_json_it = kb.load_fastweb_kb(
+            './datasets', log)
+        log.info('dataset built. Now building FAQ')
+    else:
+        dataset_en = './datasets/en.jsonl'
+    log.info('Creating dataset...')
+    # faqAI.load_dataset(dataset_en)
+    log.info('..dataset created.')
+    return faqAI
+
+
+def cli(faqAI):
+    log.info('Buongiorno, sono il tuo assistente Fastweb, come posso aiutarti?')
+    answers = prompt([{
+        'type': 'list',
+        'name': 'action',
+        'message': 'Come posso aiutarti?',
+        'choices': ['Informazioni', 'Esci'],
+    }])
+    action = answers.get('action')
+    log.info(action)
+    if(action == 'Esci'):
+        print('Grazie e arrivederci!')
+        return False
+    else:
+        q_answer = prompt([{
+            'type': 'input',
+            'name': 'question',
+            'message': 'Inserisci la domanda'
+        }])
+        question = q_answer.get('question')
+        log.info('Grazie. Ottengo la risposta...')
+        answer = faqAI.get_response(question)
+        print(''.join(answer))
+        return True
+
+
+if __name__ == '__main__':
+    faqAI = setup(force=False)
+    repeat = True
+    while repeat:
+        repeat = cli(faqAI)

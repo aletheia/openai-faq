@@ -1,10 +1,11 @@
 import {inject, injectable} from 'tsyringe';
 import {Logger} from '../infrastructure/Logger';
+import {Config} from '../infrastructure/Config';
 
 @injectable()
 export class Module {
-  protected logger: Logger;
-  constructor(@inject() logger: Logger) {
-    this.logger = logger;
-  }
+  constructor(
+    @inject(Logger) protected logger: Logger,
+    @inject(Config) protected config: Config
+  ) {}
 }

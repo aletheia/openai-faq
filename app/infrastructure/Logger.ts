@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {singleton} from 'tsyringe';
-import {createLogger, Logger as WinstonLogger} from 'winston';
+import {createLogger, Logger as WinstonLogger, format} from 'winston';
 import {Console} from 'winston/lib/winston/transports';
 
 export interface LoggerOptions {
@@ -13,9 +13,18 @@ export interface LoggerOptions {
 export class Logger {
   private _logger: WinstonLogger;
 
-  constructor(options?: LoggerOptions) {
+  constructor() {
     const defaultOptions = {
       level: 'info',
+      format: format.combine(
+        format.timestamp(),
+        format.colorize(),
+        format.align(),
+        format.printf(
+          info => `${info.timestamp} ${info.level}: ${info.message}`
+        ),
+        format.splat()
+      ),
       transports: [
         new Console({
           level: 'info',
@@ -23,7 +32,7 @@ export class Logger {
       ],
     };
 
-    options = Object.assign(defaultOptions, options);
+    const options = defaultOptions; //Object.assign(defaultOptions, options);
 
     this._logger = createLogger(options);
   }

@@ -1,6 +1,5 @@
 import {Module} from './module';
-import {inject, injectable} from 'tsyringe';
-import {Logger} from '../infrastructure/Logger';
+import {injectable} from 'tsyringe';
 
 @injectable()
 export class Service extends Module {}

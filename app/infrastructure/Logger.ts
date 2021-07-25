@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {singleton} from 'tsyringe';
+import {injectable, singleton} from 'tsyringe';
 import {createLogger, Logger as WinstonLogger, format} from 'winston';
 import {Console} from 'winston/lib/winston/transports';
+import {Config, ConfigKeys} from './Config';
 
 export interface LoggerOptions {
   level?: string;
@@ -9,20 +10,26 @@ export interface LoggerOptions {
   exitOnError?: boolean;
 }
 
+@injectable()
 @singleton()
 export class Logger {
   private _logger: WinstonLogger;
 
-  constructor() {
+  constructor(private config: Config) {
+    const logFormat =
+      this.config.get(ConfigKeys.LOG_FORMAT).toLowerCase() === 'json'
+        ? format.json()
+        : format.printf(
+            info => `${info.timestamp} ${info.level}: ${info.message}`
+          );
+
     const defaultOptions = {
-      level: 'info',
+      level: this.config.get(ConfigKeys.LOG_LEVEL),
       format: format.combine(
         format.timestamp(),
         format.colorize(),
         format.align(),
-        format.printf(
-          info => `${info.timestamp} ${info.level}: ${info.message}`
-        ),
+        logFormat,
         format.splat()
       ),
       transports: [

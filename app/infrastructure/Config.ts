@@ -1,6 +1,10 @@
 import {config as configLoader} from 'dotenv';
 import {singleton} from 'tsyringe';
 
+export enum ConfigKeys {
+  LOG_LEVEL = 'LOG_LEVEL',
+  LOG_FORMAT = 'LOG_FORMAT',
+}
 @singleton()
 export class Config {
   protected _config: {

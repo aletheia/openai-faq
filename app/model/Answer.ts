@@ -1,3 +1,7 @@
+import {Question} from './question';
+
 export interface Answer {
-  answer: string;
+  uuid: string;
+  text: string;
+  question?: Question;
 }

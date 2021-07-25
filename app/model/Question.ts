@@ -1,6 +1,6 @@
 export interface Question {
   uuid: string;
-  question: string;
+  text: string;
   context?: {
     knowledgeBases?: string[];
   };

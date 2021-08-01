@@ -1,18 +1,18 @@
 import {APIGatewayProxyEventV2} from 'aws-lambda';
 import {autoInjectable} from 'tsyringe';
-import {Answer} from '../domain/Answer';
-import {Logger} from '../infrastructure/Logger';
-import {Controller} from '../core/Controller';
-import {QuestionService} from '../service/QuestionService';
-import {ServiceError} from '../service/ServiceError';
+import {Question, Answer} from '../model';
+import {Config, Logger} from '../infrastructure';
+import {Controller} from '../core';
+import {QuestionService, ServiceError} from '../service';
+
 import {nanoid} from 'nanoid';
 
 @autoInjectable()
 export class LambdaController extends Controller {
   protected service: QuestionService;
 
-  constructor(logger: Logger, service: QuestionService) {
-    super(logger);
+  constructor(logger: Logger, config: Config, service: QuestionService) {
+    super(logger, config);
     this.service = service;
   }
 
@@ -49,8 +49,11 @@ export class LambdaController extends Controller {
       if (!event.body) {
         throw new ServiceError('Missing request body');
       }
-      const {question} = JSON.parse(event.body);
-      const answer = await this.service.askQuestion({uuid: nanoid(), question});
+      const question = JSON.parse(event.body) as Question;
+      this.logger.info(`Received question: ${question.text}`);
+      const answer = await this.service.askQuestion(
+        Object.assign({}, question, {uuid: nanoid()})
+      );
       return this.buildServiceResultResponse(answer);
     } catch (err) {
       return this.buildServiceErrorResponse(err);

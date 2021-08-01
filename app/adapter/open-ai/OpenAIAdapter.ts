@@ -1,15 +1,17 @@
+import {injectable} from 'tsyringe';
 import {nanoid} from 'nanoid';
-import {Adapter} from '../core/Adapter';
-import {Answer} from '../model/Answer';
-import {Question} from '../model/question';
+import {Adapter} from '../../core';
+import {Answer, Question} from '../../model';
+import {Config, Logger} from '../../infrastructure';
+import {ServiceError} from '../../service';
 
 import {GpTs} from 'gpts';
-import {Logger} from '../infrastructure/Logger';
-import {ServiceError} from '../service/ServiceError';
-import {injectable} from 'tsyringe';
+import {
+  DigitalTransformation,
+  JeanneRoss,
+  MITSloanDigitalSchool,
+} from './knowledge-base';
 
-import {Fastweb} from './open-ai/KnowledgeBase';
-import {Config} from '../infrastructure/Config';
 @injectable()
 export class OpenAIAdapter extends Adapter {
   private gpts: GpTs;
@@ -25,10 +27,19 @@ export class OpenAIAdapter extends Adapter {
 
   async ask(question: Question): Promise<Answer> {
     this.logger.info(`Asking "${question.text}"`);
-    const documents = Fastweb;
+    const documents = MITSloanDigitalSchool.concat(JeanneRoss).concat(
+      DigitalTransformation
+    );
     const examples_context = 'In 2017, U.S. life expectancy was 78.6 years.';
     const examples = [
-      ['What is human life expectancy in the United States?', '78 years.'],
+      [
+        'What is human life expectancy in the United States?',
+        'An average person in United States lives 78 years.',
+      ],
+      [
+        'Is it important to innovate?',
+        'Innovation is the fundamental part of a company growth process',
+      ],
     ];
     const answer = await this.gpts.answer({
       question: question.text,
@@ -43,6 +54,9 @@ export class OpenAIAdapter extends Adapter {
     });
 
     const text = answer.answers.join('\n');
+    if (text.length === 0) {
+      throw new ServiceError('No answer');
+    }
     this.logger.info(`Answer: "${text}"`);
     return {uuid: nanoid(), text, question};
   }

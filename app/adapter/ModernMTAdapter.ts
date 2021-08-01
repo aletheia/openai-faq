@@ -1,13 +1,42 @@
 import {injectable} from 'tsyringe';
-import {Adapter} from '../core/Adapter';
-import {lang} from '../core/Types';
+import {Adapter, Lang} from '../core';
+import {Config, Logger} from '../infrastructure';
+import {ServiceError} from '../service';
 
+import {ModernMT, Translation} from 'modernmt';
 @injectable()
 export class ModernMTAdapter extends Adapter {
-  async translate(text: string, fromLang: lang, toLang: lang): Promise<string> {
+  protected mmt: ModernMT;
+
+  constructor(logger: Logger, config: Config) {
+    super(logger, config);
+    this.mmt = new ModernMT(config.get('MMT_API_KEY'));
+  }
+
+  private getTranslation(translation: Translation): string {
+    if (!translation.translation) {
+      throw new ServiceError('Translation failed:');
+    }
+    return translation.translation;
+  }
+
+  async translate(
+    text: string,
+    fromLang: Lang,
+    toLang: Lang
+  ): Promise<string | string[]> {
     this.logger.info(
       `Translating "${text}" from "${fromLang.toUpperCase()}" to "${toLang.toUpperCase()}"`
     );
-    return text;
+    const translation = await this.mmt.translate(
+      Lang[fromLang] as string,
+      Lang[toLang] as string,
+      text
+    );
+    if (Array.isArray(translation)) {
+      return translation.map((item: Translation) => this.getTranslation(item));
+    } else {
+      return this.getTranslation(translation);
+    }
   }
 }

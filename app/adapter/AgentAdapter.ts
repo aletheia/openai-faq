@@ -1,5 +1,4 @@
-import {Answer} from '../model/Answer';
-import {Question} from '../model/question';
+import {Answer, Question} from '../model';
 
 export interface AgentAdapter {
   getAnswer(question: Question): Promise<Answer>;

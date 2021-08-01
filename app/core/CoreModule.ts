@@ -1,5 +1,5 @@
 import {inject, injectable} from 'tsyringe';
-import {Logger} from '../infrastructure/Logger';
+import {Logger} from '../infrastructure';
 import {Config} from '../infrastructure/Config';
 
 @injectable()
@@ -9,3 +9,12 @@ export class Module {
     @inject(Config) protected config: Config
   ) {}
 }
+
+@injectable()
+export class Controller extends Module {}
+
+@injectable()
+export class Service extends Module {}
+
+@injectable()
+export class Adapter extends Module {}

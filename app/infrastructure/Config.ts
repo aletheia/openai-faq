@@ -1,24 +1,30 @@
-import {config as configLoader} from 'dotenv';
 import {singleton} from 'tsyringe';
 
-export enum ConfigKeys {
-  LOG_LEVEL = 'LOG_LEVEL',
-  LOG_FORMAT = 'LOG_FORMAT',
-}
+import * as nconf from 'nconf';
+import {join} from 'path';
+import {config} from 'dotenv';
+
 @singleton()
 export class Config {
-  protected _config: {
-    [k: string]: string;
-  };
+  protected _config: nconf.Provider;
+
   constructor() {
-    const loadedConfig = configLoader();
-    if (!loadedConfig.parsed) {
-      throw new Error('No config file found');
+    this._config = nconf.argv().env();
+
+    const loadedConfig = config();
+    if (loadedConfig.parsed) {
+      for (const key in loadedConfig.parsed) {
+        this._config.set(key, loadedConfig.parsed[key]);
+      }
     }
-    this._config = loadedConfig.parsed;
+
+    // if (!loadedConfig.parsed) {
+    //   throw new Error('No config file found');
+    // }
+    // this._config = loadedConfig.parsed;
   }
 
   get(key: string): string {
-    return this._config[key];
+    return this._config.get(key);
   }
 }

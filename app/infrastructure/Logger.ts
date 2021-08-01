@@ -1,30 +1,45 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {injectable, singleton} from 'tsyringe';
 import {createLogger, Logger as WinstonLogger, format} from 'winston';
-import {Console} from 'winston/lib/winston/transports';
-import {Config, ConfigKeys} from './Config';
+import {Console, File} from 'winston/lib/winston/transports';
+import {Config} from './Config';
+import {ILogger} from './ILogger';
 
-export interface LoggerOptions {
-  level?: string;
-  transports?: Array<any>;
-  exitOnError?: boolean;
+enum ConfigKeys {
+  LOG_LEVEL = 'LOG_LEVEL',
+  LOG_FORMAT = 'LOG_FORMAT',
+  LOG_FILE = 'LOG_FILE',
 }
 
 @injectable()
 @singleton()
-export class Logger {
+export class Logger implements ILogger {
   private _logger: WinstonLogger;
 
   constructor(private config: Config) {
-    const logFormat =
-      this.config.get(ConfigKeys.LOG_FORMAT).toLowerCase() === 'json'
-        ? format.json()
-        : format.printf(
-            info => `${info.timestamp} ${info.level}: ${info.message}`
-          );
+    let logFormat = format.printf(
+      info => `${info.timestamp} ${info.level}: ${info.message}`
+    );
 
-    const defaultOptions = {
-      level: this.config.get(ConfigKeys.LOG_LEVEL),
+    const logFormatOption = this.config.get(ConfigKeys.LOG_FORMAT);
+    if (logFormatOption && logFormatOption.toLowerCase() === 'json') {
+      logFormat = format.json();
+    }
+
+    const logLevel = this.config.get(ConfigKeys.LOG_LEVEL)
+      ? this.config.get(ConfigKeys.LOG_LEVEL)
+      : 'info';
+
+    const transports = [];
+    const logFilename = this.config.get(ConfigKeys.LOG_FILE);
+    if (logFilename) {
+      transports.push(new File({filename: logFilename, level: logLevel}));
+    } else {
+      transports.push(new Console({level: logLevel}));
+    }
+
+    const options = {
+      level: logLevel,
       format: format.combine(
         format.timestamp(),
         format.colorize(),
@@ -32,14 +47,8 @@ export class Logger {
         logFormat,
         format.splat()
       ),
-      transports: [
-        new Console({
-          level: 'info',
-        }),
-      ],
+      transports,
     };
-
-    const options = defaultOptions; //Object.assign(defaultOptions, options);
 
     this._logger = createLogger(options);
   }

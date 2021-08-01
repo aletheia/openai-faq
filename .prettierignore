@@ -1,0 +1,11 @@
+# Ignore artifacts:
+./node_modules/
+build
+old
+./cdk.out/
+
+build
+coverage
+
+# Ignore all HTML files:
+*.html

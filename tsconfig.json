@@ -3,8 +3,12 @@
   "compilerOptions": {
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "target": "es2019",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "lib": ["es2019"],
     "rootDir": ".",
     "outDir": "build"
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": ["app/**/*.ts", "test/**/*.ts"]
 }

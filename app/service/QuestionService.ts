@@ -1,4 +1,4 @@
-import {injectable} from 'tsyringe';
+import {inject, injectable} from 'tsyringe';
 import {Answer} from '../model';
 import {Question} from '../model/question';
 import {Service} from '../core';
@@ -11,10 +11,10 @@ import {Logger} from '../infrastructure';
 @injectable()
 export class QuestionService extends Service {
   constructor(
-    logger: Logger,
-    config: Config,
-    private aiAdapter: OpenAIAdapter,
-    private translateAdapter: ModernMTAdapter
+    @inject(Logger) logger: Logger,
+    @inject(Config) config: Config,
+    @inject(OpenAIAdapter) private aiAdapter: OpenAIAdapter,
+    @inject(ModernMTAdapter) private translateAdapter: ModernMTAdapter
   ) {
     super(logger, config);
   }

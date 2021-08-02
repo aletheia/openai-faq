@@ -1,5 +1,5 @@
 import {APIGatewayProxyEventV2} from 'aws-lambda';
-import {autoInjectable} from 'tsyringe';
+import {autoInjectable, inject} from 'tsyringe';
 import {Question, Answer} from '../model';
 import {Config, Logger} from '../infrastructure';
 import {Controller} from '../core';
@@ -11,7 +11,11 @@ import {nanoid} from 'nanoid';
 export class LambdaController extends Controller {
   protected service: QuestionService;
 
-  constructor(logger: Logger, config: Config, service: QuestionService) {
+  constructor(
+    @inject(Logger) logger: Logger,
+    @inject(Config) config: Config,
+    @inject(QuestionService) service: QuestionService
+  ) {
     super(logger, config);
     this.service = service;
   }

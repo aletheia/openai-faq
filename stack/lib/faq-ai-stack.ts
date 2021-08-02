@@ -6,7 +6,7 @@ import {LambdaProxyIntegration} from '@aws-cdk/aws-apigatewayv2-integrations';
 import {join} from 'path';
 import {NodejsFunction} from '@aws-cdk/aws-lambda-nodejs';
 import {CfnOutput, Duration} from '@aws-cdk/core';
-import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment';
+//import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment';
 
 import * as dotenv from 'dotenv';
 import {Runtime} from '@aws-cdk/aws-lambda';
@@ -29,6 +29,7 @@ export class FaqAiStack extends cdk.Stack {
         tsconfig: './tsconfig.json',
         minify: false,
         sourceMap: true,
+        nodeModules: ['nconf', 'winston'],
       },
       environment: {
         OPENAI_API_KEY: process.env.OPENAI_API_KEY!,

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {injectable, singleton} from 'tsyringe';
+import {inject, injectable, singleton} from 'tsyringe';
 import {createLogger, Logger as WinstonLogger, format} from 'winston';
 import {Console, File} from 'winston/lib/winston/transports';
 import {Config} from './Config';
@@ -16,7 +16,7 @@ enum ConfigKeys {
 export class Logger implements ILogger {
   private _logger: WinstonLogger;
 
-  constructor(private config: Config) {
+  constructor(@inject(Config) private config: Config) {
     let logFormat = format.printf(
       info => `${info.timestamp} ${info.level}: ${info.message}`
     );

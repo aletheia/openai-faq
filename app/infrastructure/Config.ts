@@ -1,7 +1,6 @@
 import {singleton} from 'tsyringe';
 
 import * as nconf from 'nconf';
-import {join} from 'path';
 import {config} from 'dotenv';
 
 @singleton()
@@ -9,7 +8,7 @@ export class Config {
   protected _config: nconf.Provider;
 
   constructor() {
-    this._config = nconf.argv().env();
+    this._config = nconf.env();
 
     const loadedConfig = config();
     if (loadedConfig.parsed) {

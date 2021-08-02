@@ -1,4 +1,4 @@
-import {injectable} from 'tsyringe';
+import {inject, injectable} from 'tsyringe';
 import {nanoid} from 'nanoid';
 import {Adapter} from '../../core';
 import {Answer, Question} from '../../model';
@@ -16,7 +16,7 @@ import {
 export class OpenAIAdapter extends Adapter {
   private gpts: GpTs;
 
-  constructor(logger: Logger, config: Config) {
+  constructor(@inject(Logger) logger: Logger, @inject(Config) config: Config) {
     super(logger, config);
     const openAiKey = process.env.OPENAI_API_KEY;
     if (!openAiKey) {

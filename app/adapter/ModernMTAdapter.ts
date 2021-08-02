@@ -1,4 +1,4 @@
-import {injectable} from 'tsyringe';
+import {inject, injectable} from 'tsyringe';
 import {Adapter, Lang} from '../core';
 import {Config, Logger} from '../infrastructure';
 import {ServiceError} from '../service';
@@ -8,7 +8,7 @@ import {ModernMT, Translation} from 'modernmt';
 export class ModernMTAdapter extends Adapter {
   protected mmt: ModernMT;
 
-  constructor(logger: Logger, config: Config) {
+  constructor(@inject(Logger) logger: Logger, @inject(Config) config: Config) {
     super(logger, config);
     this.mmt = new ModernMT(config.get('MMT_API_KEY'));
   }

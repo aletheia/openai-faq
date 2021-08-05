@@ -1,6 +1,6 @@
 import {APIGatewayProxyEventV2} from 'aws-lambda';
 import {autoInjectable, inject} from 'tsyringe';
-import {Question, Answer} from '../model';
+import {Question} from '../model';
 import {Config, Logger} from '../infrastructure';
 import {Controller} from '../core';
 import {QuestionService, ServiceError} from '../service';
@@ -40,20 +40,35 @@ export class LambdaController extends Controller {
     };
   }
 
-  buildServiceResultResponse(answer: Answer) {
+  buildServiceResultResponse<T>(resultObject: T) {
     return {
       statusCode: 200,
       headers: this.headers(),
-      body: JSON.stringify(answer),
+      body: JSON.stringify(resultObject),
     };
   }
 
-  async handleEvent(event: APIGatewayProxyEventV2) {
+  getQueryStringParameters(event: APIGatewayProxyEventV2) {
+    if (!event.pathParameters) {
+      return {};
+    }
+    return event.pathParameters;
+  }
+
+  getBody<T>(event: APIGatewayProxyEventV2): T {
+    if (!event.body) {
+      throw new ServiceError('Event has no body object');
+    }
+    const question = JSON.parse(event.body) as T;
+    return question;
+  }
+
+  async handlePostEvent(event: APIGatewayProxyEventV2) {
     try {
       if (!event.body) {
         throw new ServiceError('Missing request body');
       }
-      const question = JSON.parse(event.body) as Question;
+      const question = this.getBody<Question>(event);
       this.logger.info(`Received question: ${question.text}`);
       const answer = await this.service.askQuestion(
         Object.assign({}, question, {uuid: nanoid()})
